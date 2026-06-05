@@ -2,6 +2,7 @@ export default function Header({
   totalPlayers,
   visiblePlayers,
   onStartAuction,
+  auctionSets,
   canStartAuction,
 }) {
   return (
@@ -17,14 +18,20 @@ export default function Header({
       <div className="hero-content">
         <div className="hero-actions">
           <div className="league-pill">NEPL Season 2026</div>
-          <button
-            type="button"
-            className="start-auction-button"
-            onClick={onStartAuction}
-            disabled={!canStartAuction}
-          >
-            Start Auctions
-          </button>
+          <div className="auction-set-actions" aria-label="Start auction by player set">
+            {auctionSets.map((set) => (
+              <button
+                key={set.id}
+                type="button"
+                className="start-auction-button"
+                onClick={() => onStartAuction(set.id)}
+                disabled={!canStartAuction || set.count === 0}
+              >
+                <span>{set.label}</span>
+                <strong>{set.count}</strong>
+              </button>
+            ))}
+          </div>
         </div>
         <h1>NEPL 2026 Player Auction</h1>
         <p>Cricket Player Listing</p>
@@ -39,8 +46,8 @@ export default function Header({
             <span>In Current View</span>
           </div>
           <div>
-            <strong>4</strong>
-            <span>Skill Filters</span>
+            <strong>{auctionSets.length}</strong>
+            <span>Auction Sets</span>
           </div>
         </div>
       </div>

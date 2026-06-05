@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getPlayerImageCandidates, placeholderImage } from "../utils/imageHelper.js";
 
-export default function AuctionView({ players, currentIndex, onChangeIndex, onExit }) {
+export default function AuctionView({ players, currentIndex, onChangeIndex, title, onExit }) {
   const player = players[currentIndex];
   const imageCandidates = useMemo(
     () => (player ? getPlayerImageCandidates(player) : [placeholderImage]),
@@ -62,7 +62,7 @@ export default function AuctionView({ players, currentIndex, onChangeIndex, onEx
         <div>
           <span>NEPL 2026 Live Auction</span>
           <strong>
-            Player {currentIndex + 1} of {players.length}
+            {title}: Player {currentIndex + 1} of {players.length}
           </strong>
         </div>
         <button type="button" className="auction-exit" onClick={onExit}>

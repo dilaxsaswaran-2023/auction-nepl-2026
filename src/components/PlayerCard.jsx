@@ -30,6 +30,11 @@ export default function PlayerCard({ player }) {
           <strong>{player.team2025}</strong>
         </div>
 
+        <div className="points-badge">
+          <span>2025 Points</span>
+          <strong>{player.lastyrpoints}</strong>
+        </div>
+
         <div className="skill-row">
           <span className="skill-badge batting">
             <small>Batting</small>

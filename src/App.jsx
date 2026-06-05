@@ -13,10 +13,75 @@ const initialFilters = {
   bowlingStyle: "All",
 };
 
+const auctionSets = [
+  {
+    id: "new-male",
+    label: "New Male Players",
+    file: "/data/new-male-players.csv",
+    dataLabel: "New Male Players",
+    matches: (player) => player.auctionSet === "New Male Players",
+  },
+  {
+    id: "below-100-male",
+    label: "Male Below 100 Points",
+    file: "/data/male-below-100-points.csv",
+    dataLabel: "Male Players Below 100 Points",
+    matches: (player) => player.auctionSet === "Male Players Below 100 Points",
+  },
+  {
+    id: "above-100-male",
+    label: "Male 100+ Points",
+    file: "/data/male-100-plus-points.csv",
+    dataLabel: "Male Players 100+ Points",
+    matches: (player) => player.auctionSet === "Male Players 100+ Points",
+  },
+  {
+    id: "female",
+    label: "Female Players",
+    file: "/data/female-players.csv",
+    dataLabel: "Female Players",
+    matches: (player) => player.auctionSet === "Female Players",
+  },
+];
+
 function uniqueValues(players, key) {
   return [...new Set(players.map((player) => player[key]).filter(Boolean))].sort(
     (a, b) => a.localeCompare(b),
   );
+}
+
+function parsePlayerCsv(set) {
+  return new Promise((resolve, reject) => {
+    Papa.parse(set.file, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: ({ data }) => {
+        resolve(
+          data
+            .map((player) => ({
+              name: player.name?.trim() || "",
+              gender: player.gender?.trim() || "N/A",
+              team2025: player.team2025?.trim() || "New Player",
+              lastyrpoints: player.lastyrpoints?.trim() || "N/A",
+              auctionSet: set.dataLabel,
+              battingStyle: player.battingStyle?.trim() || "N/A",
+              bowlingStyle: player.bowlingStyle?.trim() || "N/A",
+              image: player.image?.trim() || "",
+            }))
+            .filter((player) => player.name),
+        );
+      },
+      error: reject,
+    });
+  });
+}
+
+function shufflePlayers(players) {
+  return [...players]
+    .map((player) => ({ player, sortKey: Math.random() }))
+    .sort((a, b) => a.sortKey - b.sortKey)
+    .map(({ player }) => player);
 }
 
 export default function App() {
@@ -26,32 +91,19 @@ export default function App() {
   const [error, setError] = useState("");
   const [auctionMode, setAuctionMode] = useState(false);
   const [auctionIndex, setAuctionIndex] = useState(0);
+  const [auctionPlayers, setAuctionPlayers] = useState([]);
+  const [auctionTitle, setAuctionTitle] = useState("");
 
   useEffect(() => {
-    Papa.parse("/data/players.csv", {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: ({ data }) => {
-        const normalized = data
-          .map((player) => ({
-            name: player.name?.trim() || "",
-            gender: player.gender?.trim() || "N/A",
-            team2025: player.team2025?.trim() || "New Player",
-            battingStyle: player.battingStyle?.trim() || "N/A",
-            bowlingStyle: player.bowlingStyle?.trim() || "N/A",
-            image: player.image?.trim() || "",
-          }))
-          .filter((player) => player.name);
-
-        setPlayers(normalized);
+    Promise.all(auctionSets.map(parsePlayerCsv))
+      .then((playerGroups) => {
+        setPlayers(playerGroups.flat());
         setLoading(false);
-      },
-      error: () => {
-        setError("Could not load player data. Please check public/data/players.csv.");
+      })
+      .catch(() => {
+        setError("Could not load player data. Please check the category CSV files in public/data.");
         setLoading(false);
-      },
-    });
+      });
   }, []);
 
   const options = useMemo(
@@ -87,9 +139,35 @@ export default function App() {
     });
   }, [filters, players]);
 
+  const groupedPlayers = useMemo(
+    () =>
+      auctionSets
+        .map((set) => ({
+          id: set.id,
+          label: set.label,
+          players: filteredPlayers.filter(set.matches),
+        }))
+        .filter((set) => set.players.length > 0),
+    [filteredPlayers],
+  );
+
   const resetFilters = () => setFilters(initialFilters);
 
-  const startAuction = () => {
+  const auctionSetButtons = useMemo(
+    () =>
+      auctionSets.map((set) => ({
+        id: set.id,
+        label: set.label,
+        count: players.filter(set.matches).length,
+      })),
+    [players],
+  );
+
+  const startAuction = (setId) => {
+    const selectedSet = auctionSets.find((set) => set.id === setId);
+    const selectedPlayers = selectedSet ? players.filter(selectedSet.matches) : [];
+    setAuctionPlayers(shufflePlayers(selectedPlayers));
+    setAuctionTitle(selectedSet?.label || "Player Auction");
     setAuctionIndex(0);
     setAuctionMode(true);
   };
@@ -97,9 +175,10 @@ export default function App() {
   if (auctionMode) {
     return (
       <AuctionView
-        players={filteredPlayers}
+        players={auctionPlayers}
         currentIndex={auctionIndex}
         onChangeIndex={setAuctionIndex}
+        title={auctionTitle}
         onExit={() => setAuctionMode(false)}
       />
     );
@@ -111,7 +190,8 @@ export default function App() {
         totalPlayers={players.length}
         visiblePlayers={filteredPlayers.length}
         onStartAuction={startAuction}
-        canStartAuction={!loading && !error && filteredPlayers.length > 0}
+        auctionSets={auctionSetButtons}
+        canStartAuction={!loading && !error}
       />
 
       <section className="content-wrap" aria-label="Player directory">
@@ -142,9 +222,20 @@ export default function App() {
         )}
 
         {!loading && !error && filteredPlayers.length > 0 && (
-          <section className="players-grid" aria-live="polite">
-            {filteredPlayers.map((player) => (
-              <PlayerCard key={`${player.name}-${player.team2025}`} player={player} />
+          <section className="player-groups" aria-live="polite">
+            {groupedPlayers.map((group) => (
+              <section className="player-group" key={group.id}>
+                <header className="player-group-header">
+                  <h2>{group.label}</h2>
+                  <span>{group.players.length}</span>
+                </header>
+
+                <div className="players-grid">
+                  {group.players.map((player) => (
+                    <PlayerCard key={`${player.name}-${player.team2025}`} player={player} />
+                  ))}
+                </div>
+              </section>
             ))}
           </section>
         )}
