@@ -1,0 +1,21 @@
+{
+  "name": "nepl-2026-player-auction",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "convert:csv": "node scripts/convertExcelToCsv.mjs",
+    "sync:images": "node scripts/syncPlayerImages.mjs"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "papaparse": "^5.5.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "read-excel-file": "^9.0.10",
+    "vite": "^7.0.0"
+  }
+}
