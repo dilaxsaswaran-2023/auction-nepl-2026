@@ -3,6 +3,7 @@ export default function Header({
   visiblePlayers,
   onStartAuction,
   auctionSets,
+  onChooseGroups,
   canStartAuction,
 }) {
   return (
@@ -18,6 +19,9 @@ export default function Header({
       <div className="hero-content">
         <div className="hero-actions">
           <div className="league-pill">NEPL Season 2026</div>
+          <button type="button" className="choose-groups-button" onClick={onChooseGroups}>
+            Choose Groups
+          </button>
           <div className="auction-set-actions" aria-label="Start auction by player set">
             {auctionSets.map((set) => (
               <button

@@ -35,6 +35,17 @@ export default function PlayerCard({ player }) {
           <strong>{player.lastyrpoints}</strong>
         </div>
 
+        <div className="profile-row">
+          <span className="profile-badge">
+            <small>Age</small>
+            {player.age}
+          </span>
+          <span className="profile-badge">
+            <small>Membership</small>
+            {player.membershipNo}
+          </span>
+        </div>
+
         <div className="skill-row">
           <span className="skill-badge batting">
             <small>Batting</small>

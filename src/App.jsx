@@ -4,6 +4,7 @@ import Header from "./components/Header.jsx";
 import Filters from "./components/Filters.jsx";
 import PlayerCard from "./components/PlayerCard.jsx";
 import AuctionView from "./components/AuctionView.jsx";
+import SlotsView from "./components/SlotsView.jsx";
 
 const initialFilters = {
   search: "",
@@ -20,6 +21,27 @@ const auctionSets = [
     file: "/data/new-male-players.csv",
     dataLabel: "New Male Players",
     matches: (player) => player.auctionSet === "New Male Players",
+  },
+  {
+    id: "over-40-charted-men",
+    label: "Over 40 Charted Men",
+    file: "/data/over-40-charted-men.csv",
+    dataLabel: "Over 40 Charted Men",
+    matches: (player) => player.auctionSet === "Over 40 Charted Men",
+  },
+  {
+    id: "over-40-non-charted-men",
+    label: "Over 40 Non Charted Men",
+    file: "/data/over-40-non-charted-men.csv",
+    dataLabel: "Over 40 Non Charted Men",
+    matches: (player) => player.auctionSet === "Over 40 Non Charted Men",
+  },
+  {
+    id: "below-40-charted-men",
+    label: "40 and Below Charted Men",
+    file: "/data/below-40-charted-men.csv",
+    dataLabel: "40 and Below Charted Men",
+    matches: (player) => player.auctionSet === "40 and Below Charted Men",
   },
   {
     id: "below-100-male",
@@ -64,6 +86,8 @@ function parsePlayerCsv(set) {
               gender: player.gender?.trim() || "N/A",
               team2025: player.team2025?.trim() || "New Player",
               lastyrpoints: player.lastyrpoints?.trim() || "N/A",
+              age: player.age?.trim() || "N/A",
+              membershipNo: player.membershipNo?.trim() || "N/A",
               auctionSet: set.dataLabel,
               battingStyle: player.battingStyle?.trim() || "N/A",
               bowlingStyle: player.bowlingStyle?.trim() || "N/A",
@@ -84,15 +108,25 @@ function shufflePlayers(players) {
     .map(({ player }) => player);
 }
 
+function navigateTo(path) {
+  window.history.pushState({}, "", path);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
+
 export default function App() {
   const [players, setPlayers] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [auctionMode, setAuctionMode] = useState(false);
   const [auctionIndex, setAuctionIndex] = useState(0);
   const [auctionPlayers, setAuctionPlayers] = useState([]);
-  const [auctionTitle, setAuctionTitle] = useState("");
+  const [route, setRoute] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handlePopState = () => setRoute(window.location.pathname);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   useEffect(() => {
     Promise.all(auctionSets.map(parsePlayerCsv))
@@ -105,6 +139,16 @@ export default function App() {
         setLoading(false);
       });
   }, []);
+
+  const auctionType = route.match(/^\/auction\/([^/]+)$/)?.[1] || "";
+  const selectedAuctionSet = auctionSets.find((set) => set.id === auctionType);
+
+  useEffect(() => {
+    if (!selectedAuctionSet || players.length === 0) return;
+
+    setAuctionPlayers(shufflePlayers(players.filter(selectedAuctionSet.matches)));
+    setAuctionIndex(0);
+  }, [players, selectedAuctionSet]);
 
   const options = useMemo(
     () => ({
@@ -164,22 +208,21 @@ export default function App() {
   );
 
   const startAuction = (setId) => {
-    const selectedSet = auctionSets.find((set) => set.id === setId);
-    const selectedPlayers = selectedSet ? players.filter(selectedSet.matches) : [];
-    setAuctionPlayers(shufflePlayers(selectedPlayers));
-    setAuctionTitle(selectedSet?.label || "Player Auction");
-    setAuctionIndex(0);
-    setAuctionMode(true);
+    navigateTo(`/auction/${setId}`);
   };
 
-  if (auctionMode) {
+  if (route === "/slots") {
+    return <SlotsView onBack={() => navigateTo("/")} />;
+  }
+
+  if (selectedAuctionSet) {
     return (
       <AuctionView
         players={auctionPlayers}
         currentIndex={auctionIndex}
         onChangeIndex={setAuctionIndex}
-        title={auctionTitle}
-        onExit={() => setAuctionMode(false)}
+        title={selectedAuctionSet.label}
+        onExit={() => navigateTo("/")}
       />
     );
   }
@@ -191,6 +234,7 @@ export default function App() {
         visiblePlayers={filteredPlayers.length}
         onStartAuction={startAuction}
         auctionSets={auctionSetButtons}
+        onChooseGroups={() => navigateTo("/slots")}
         canStartAuction={!loading && !error}
       />
 

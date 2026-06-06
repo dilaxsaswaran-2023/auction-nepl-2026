@@ -88,6 +88,25 @@ button {
   box-shadow: 0 18px 40px rgba(250, 204, 21, 0.22);
 }
 
+.choose-groups-button {
+  min-height: 38px;
+  padding: 0 16px;
+  color: #ffffff;
+  font-weight: 950;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 18px 40px rgba(8, 13, 31, 0.16);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.choose-groups-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 52px rgba(8, 13, 31, 0.24);
+}
+
 .start-auction-button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -113,7 +132,7 @@ button {
   display: grid;
   grid-template-columns: repeat(4, minmax(132px, 1fr));
   gap: 10px;
-  width: min(760px, 100%);
+  width: min(980px, 100%);
 }
 
 .start-auction-button span {
@@ -510,10 +529,33 @@ button {
   line-height: 1;
 }
 
+.profile-row,
 .skill-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.profile-badge {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  min-height: 58px;
+  padding: 10px;
+  color: #122033;
+  font-size: 0.86rem;
+  font-weight: 950;
+  line-height: 1.15;
+  border: 1px solid rgba(20, 83, 45, 0.18);
+  border-radius: 8px;
+  background: #f8fafc;
+  overflow-wrap: anywhere;
+}
+
+.profile-badge small {
+  color: #52677a;
+  font-size: 0.68rem;
+  font-weight: 900;
 }
 
 .skill-badge {
@@ -841,6 +883,173 @@ button {
   opacity: 0.48;
 }
 
+.slots-page {
+  min-height: 100vh;
+  padding: 34px clamp(16px, 5vw, 76px) 64px;
+  background:
+    radial-gradient(circle at 10% 14%, rgba(250, 204, 21, 0.2), transparent 26rem),
+    radial-gradient(circle at 90% 8%, rgba(37, 99, 235, 0.18), transparent 28rem),
+    linear-gradient(135deg, #effdf5 0%, #eff6ff 48%, #faf5ff 100%);
+}
+
+.slots-topbar {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: min(1180px, 100%);
+  margin: 0 auto 28px;
+}
+
+.slots-topbar span {
+  color: #14532d;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.slots-topbar h1 {
+  margin: 6px 0 0;
+  color: #102033;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  line-height: 0.96;
+}
+
+.slots-back-button,
+.assign-button {
+  min-height: 44px;
+  padding: 0 16px;
+  color: #ffffff;
+  font-weight: 950;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #16a34a, #2563eb 52%, #7c3aed);
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.22);
+}
+
+.assign-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.slots-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.42fr) minmax(320px, 1fr);
+  gap: 22px;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.available-teams,
+.slot-board {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+}
+
+.available-teams header,
+.slot-board header {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.available-teams h2,
+.slot-board h2 {
+  margin: 0;
+  color: #102033;
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+}
+
+.available-teams header span {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  min-height: 34px;
+  color: #122033;
+  font-weight: 950;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #facc15, #fef08a);
+}
+
+.available-teams ul {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.available-teams li,
+.slot-card {
+  padding: 13px;
+  color: #122033;
+  font-weight: 900;
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.slot-card {
+  display: grid;
+  gap: 12px;
+  min-height: 120px;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.slot-grid.assigning .slot-card {
+  border-color: rgba(37, 99, 235, 0.38);
+  box-shadow: 0 18px 42px rgba(37, 99, 235, 0.16);
+  animation: slotShuffle 520ms ease-in-out infinite;
+}
+
+.slot-grid.assigning .slot-card:nth-child(2n) {
+  animation-delay: 90ms;
+}
+
+.slot-grid.assigning .slot-card:nth-child(3n) {
+  animation-delay: 180ms;
+}
+
+.slot-card span {
+  color: #52677a;
+  font-size: 0.8rem;
+  font-weight: 950;
+}
+
+.slot-card strong {
+  align-self: end;
+  color: #14532d;
+  font-size: clamp(1.05rem, 2vw, 1.32rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+@keyframes slotShuffle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-6px) scale(1.02);
+  }
+}
+
 @media (max-width: 1080px) {
   .filters-panel {
     grid-template-columns: 1fr;
@@ -868,6 +1077,23 @@ button {
   .auction-set-actions {
     grid-template-columns: 1fr;
     width: 100%;
+  }
+
+  .slots-page {
+    padding: 22px 12px 44px;
+  }
+
+  .slots-topbar,
+  .slots-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .slots-topbar {
+    display: grid;
+  }
+
+  .slot-grid {
+    grid-template-columns: 1fr;
   }
 
   .hero-stats {
@@ -907,6 +1133,7 @@ button {
 
   .filter-controls,
   .players-grid,
+  .profile-row,
   .skill-row {
     grid-template-columns: 1fr;
   }
