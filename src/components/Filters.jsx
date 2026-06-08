@@ -5,6 +5,12 @@ const selectGroups = [
   { key: "bowlingStyle", label: "Bowling Style", optionKey: "bowlingStyles" },
 ];
 
+const sortOptions = [
+  { value: "name", label: "Name" },
+  { value: "team2025", label: "Team" },
+  { value: "battingStyle", label: "Batting Style" },
+];
+
 export default function Filters({ filters, onChange, onReset, options }) {
   const updateFilter = (key, value) => {
     onChange((current) => ({ ...current, [key]: value }));
@@ -44,6 +50,20 @@ export default function Filters({ filters, onChange, onReset, options }) {
       <button type="button" className="reset-button" onClick={onReset}>
         Reset filters
       </button>
+
+      <label className="select-field sort-field">
+        <span>Sort By</span>
+        <select
+          value={filters.sortBy}
+          onChange={(event) => updateFilter("sortBy", event.target.value)}
+        >
+          {sortOptions.map((option) => (
+            <option value={option.value} key={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
     </section>
   );
 }

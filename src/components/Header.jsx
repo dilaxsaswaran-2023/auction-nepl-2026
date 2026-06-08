@@ -1,60 +1,91 @@
 export default function Header({
   totalPlayers,
   visiblePlayers,
+  dashboardStats,
   onStartAuction,
   auctionSets,
   onChooseGroups,
+  onShowRetained,
   canStartAuction,
 }) {
   return (
-    <header className="hero">
-      <div className="hero-visual hero-visual-bat" aria-hidden="true" />
-      <div className="hero-visual hero-visual-ball" aria-hidden="true" />
-      <div className="hero-visual hero-visual-stumps" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
+    <>
+      <nav className="top-nav" aria-label="Primary navigation">
+        <a className="brand-lockup" href="#top" aria-label="NEPL Auction home">
+          <span className="brand-mark">N</span>
+          <span>
+            <strong>NEPL Auction</strong>
+            <small>Official 2026 Draft Desk</small>
+          </span>
+        </a>
+        <div className="nav-links">
+          <a href="#players">Players</a>
+          <button type="button" onClick={onChooseGroups}>Groups</button>
+          <button type="button" onClick={onShowRetained}>Retained</button>
+        </div>
+      </nav>
 
-      <div className="hero-content">
-        <div className="hero-actions">
-          <div className="league-pill">NEPL Season 2026</div>
-          <button type="button" className="choose-groups-button" onClick={onChooseGroups}>
-            Choose Groups
-          </button>
-          <div className="auction-set-actions" aria-label="Start auction by player set">
-            {auctionSets.map((set) => (
-              <button
-                key={set.id}
-                type="button"
-                className="start-auction-button"
-                onClick={() => onStartAuction(set.id)}
-                disabled={!canStartAuction || set.count === 0}
-              >
-                <span>{set.label}</span>
-                <strong>{set.count}</strong>
+      <header className="site-header">
+        <div className="hero" id="top">
+          <div className="hero-visual hero-visual-bat" aria-hidden="true" />
+          <div className="hero-visual hero-visual-ball" aria-hidden="true" />
+          <div className="hero-visual hero-visual-stumps" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+
+          <div className="hero-content">
+            <div className="hero-actions">
+              <div className="league-pill">NEPL Season 2026</div>
+              <button type="button" className="choose-groups-button" onClick={onChooseGroups}>
+                Choose Groups
               </button>
-            ))}
-          </div>
-        </div>
-        <h1>NEPL 2026 Player Auction</h1>
-        <p>Cricket Player Listing</p>
+              <button type="button" className="choose-groups-button" onClick={onShowRetained}>
+                Retained Players
+              </button>
+            </div>
 
-        <div className="hero-stats" aria-label="Auction listing summary">
-          <div>
-            <strong>{totalPlayers}</strong>
-            <span>Registered Players</span>
-          </div>
-          <div>
-            <strong>{visiblePlayers}</strong>
-            <span>In Current View</span>
-          </div>
-          <div>
-            <strong>{auctionSets.length}</strong>
-            <span>Auction Sets</span>
+            <div className="hero-stats" aria-label="Auction listing summary">
+              <div>
+                <strong>{totalPlayers}</strong>
+                <span>Total Players</span>
+              </div>
+              <div>
+                <strong>{dashboardStats?.teams || 0}</strong>
+                <span>Teams</span>
+              </div>
+              <div>
+                <strong>{auctionSets.length}</strong>
+                <span>Categories</span>
+              </div>
+              <div>
+                <strong>2026</strong>
+                <span>Auction Year</span>
+              </div>
+            </div>
+
+            <div className="auction-set-actions" aria-label="Start auction by player set">
+              {auctionSets.map((set) => (
+                <button
+                  key={set.id}
+                  type="button"
+                  className="start-auction-button"
+                  onClick={() => onStartAuction(set.id)}
+                  disabled={!canStartAuction || set.count === 0}
+                >
+                  <span>{set.label}</span>
+                  <strong>{set.count}</strong>
+                </button>
+              ))}
+            </div>
+
+            <div className="hero-caption">
+              <span>{visiblePlayers} players currently match the active directory view.</span>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }

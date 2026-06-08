@@ -5,6 +5,7 @@ import Filters from "./components/Filters.jsx";
 import PlayerCard from "./components/PlayerCard.jsx";
 import AuctionView from "./components/AuctionView.jsx";
 import SlotsView from "./components/SlotsView.jsx";
+import RetainedView from "./components/RetainedView.jsx";
 
 const initialFilters = {
   search: "",
@@ -12,6 +13,7 @@ const initialFilters = {
   team2025: "All",
   battingStyle: "All",
   bowlingStyle: "All",
+  sortBy: "name",
 };
 
 const auctionSets = [
@@ -63,6 +65,7 @@ const auctionSets = [
     file: "/data/female-players.csv",
     dataLabel: "Female Players",
     matches: (player) => player.auctionSet === "Female Players",
+    hidden: true,
   },
 ];
 
@@ -129,7 +132,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    Promise.all(auctionSets.map(parsePlayerCsv))
+    Promise.all(auctionSets.filter((set) => !set.hidden).map(parsePlayerCsv))
       .then((playerGroups) => {
         setPlayers(playerGroups.flat());
         setLoading(false);
@@ -141,7 +144,7 @@ export default function App() {
   }, []);
 
   const auctionType = route.match(/^\/auction\/([^/]+)$/)?.[1] || "";
-  const selectedAuctionSet = auctionSets.find((set) => set.id === auctionType);
+  const selectedAuctionSet = auctionSets.find((set) => set.id === auctionType && !set.hidden);
 
   useEffect(() => {
     if (!selectedAuctionSet || players.length === 0) return;
@@ -163,7 +166,7 @@ export default function App() {
   const filteredPlayers = useMemo(() => {
     const searchTerm = filters.search.toLowerCase().trim();
 
-    return players.filter((player) => {
+    const result = players.filter((player) => {
       const matchesSearch = player.name.toLowerCase().includes(searchTerm);
       const matchesGender = filters.gender === "All" || player.gender === filters.gender;
       const matchesTeam =
@@ -181,11 +184,40 @@ export default function App() {
         matchesBowling
       );
     });
+
+    return [...result].sort((a, b) => {
+      const primary = filters.sortBy || "name";
+      const first = String(a[primary] || "");
+      const second = String(b[primary] || "");
+      return first.localeCompare(second, undefined, { numeric: true, sensitivity: "base" });
+    });
   }, [filters, players]);
+
+  const dashboardStats = useMemo(() => {
+    const teams = new Set(
+      players
+        .map((player) => player.team2025)
+        .filter((team) => team && team !== "New Player"),
+    );
+    const battingPlayers = players.filter((player) => player.battingStyle !== "N/A").length;
+    const bowlingPlayers = players.filter((player) => player.bowlingStyle !== "N/A").length;
+    const allRounders = players.filter(
+      (player) => player.battingStyle !== "N/A" && player.bowlingStyle !== "N/A",
+    ).length;
+
+    return {
+      teams: teams.size,
+      battingPlayers,
+      bowlingPlayers,
+      allRounders,
+      availablePlayers: filteredPlayers.length,
+    };
+  }, [filteredPlayers.length, players]);
 
   const groupedPlayers = useMemo(
     () =>
       auctionSets
+        .filter((set) => !set.hidden)
         .map((set) => ({
           id: set.id,
           label: set.label,
@@ -199,11 +231,13 @@ export default function App() {
 
   const auctionSetButtons = useMemo(
     () =>
-      auctionSets.map((set) => ({
-        id: set.id,
-        label: set.label,
-        count: players.filter(set.matches).length,
-      })),
+      auctionSets
+        .filter((set) => !set.hidden)
+        .map((set) => ({
+          id: set.id,
+          label: set.label,
+          count: players.filter(set.matches).length,
+        })),
     [players],
   );
 
@@ -213,6 +247,10 @@ export default function App() {
 
   if (route === "/slots") {
     return <SlotsView onBack={() => navigateTo("/")} />;
+  }
+
+  if (route === "/retained") {
+    return <RetainedView players={players} onBack={() => navigateTo("/")} />;
   }
 
   if (selectedAuctionSet) {
@@ -232,13 +270,32 @@ export default function App() {
       <Header
         totalPlayers={players.length}
         visiblePlayers={filteredPlayers.length}
+        dashboardStats={dashboardStats}
         onStartAuction={startAuction}
         auctionSets={auctionSetButtons}
         onChooseGroups={() => navigateTo("/slots")}
+        onShowRetained={() => navigateTo("/retained")}
         canStartAuction={!loading && !error}
       />
 
-      <section className="content-wrap" aria-label="Player directory">
+      <section className="content-wrap" id="players" aria-label="Player directory">
+        <section className="auction-dashboard" aria-label="Auction dashboard overview">
+          {[
+            ["TP", "Total Players", players.length],
+            ["TM", "Total Teams", dashboardStats.teams],
+            ["BT", "Batsmen", dashboardStats.battingPlayers],
+            ["BW", "Bowlers", dashboardStats.bowlingPlayers],
+            ["AR", "All-rounders", dashboardStats.allRounders],
+            ["AV", "Available", dashboardStats.availablePlayers],
+          ].map(([code, label, value]) => (
+            <article className="dashboard-card" key={label}>
+              <span>{code}</span>
+              <strong>{value}</strong>
+              <small>{label}</small>
+            </article>
+          ))}
+        </section>
+
         <Filters
           filters={filters}
           onChange={setFilters}

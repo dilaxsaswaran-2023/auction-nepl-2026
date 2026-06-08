@@ -16,7 +16,8 @@ export default function PlayerCard({ player }) {
     <article className="player-card">
       <div className="photo-wrap">
         <img src={currentImage} alt={player.name} onError={handleImageError} />
-        <span className="auction-ribbon">Auction Pool</span>
+        <span className="auction-ribbon">Available</span>
+        <span className="status-dot" aria-hidden="true" />
       </div>
 
       <div className="card-body">
@@ -31,8 +32,9 @@ export default function PlayerCard({ player }) {
         </div>
 
         <div className="points-badge">
-          <span>2025 Points</span>
-          <strong>{player.lastyrpoints}</strong>
+          <span>Base Price</span>
+          <strong>TBD</strong>
+          <small>2025 Points: {player.lastyrpoints}</small>
         </div>
 
         <div className="profile-row">
@@ -56,6 +58,12 @@ export default function PlayerCard({ player }) {
             {player.bowlingStyle}
           </span>
         </div>
+
+        <div className="bid-preview">
+          <span>Current Bid</span>
+          <strong>Awaiting Auction</strong>
+        </div>
+
       </div>
     </article>
   );
