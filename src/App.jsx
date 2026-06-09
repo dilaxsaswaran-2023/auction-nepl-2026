@@ -6,6 +6,7 @@ import PlayerCard from "./components/PlayerCard.jsx";
 import AuctionView from "./components/AuctionView.jsx";
 import SlotsView from "./components/SlotsView.jsx";
 import RetainedView from "./components/RetainedView.jsx";
+import Summary2025View from "./components/Summary2025View.jsx";
 
 const initialFilters = {
   search: "",
@@ -118,6 +119,7 @@ function navigateTo(path) {
 
 export default function App() {
   const [players, setPlayers] = useState([]);
+  const [allPlayers, setAllPlayers] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -132,9 +134,38 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    Promise.all(auctionSets.filter((set) => !set.hidden).map(parsePlayerCsv))
-      .then((playerGroups) => {
+    Promise.all([
+      Promise.all(auctionSets.filter((set) => !set.hidden).map(parsePlayerCsv)),
+      new Promise((resolve, reject) => {
+        Papa.parse("/data/players.csv", {
+          download: true,
+          header: true,
+          skipEmptyLines: true,
+          complete: ({ data }) => {
+            resolve(
+              data
+                .map((player) => ({
+                  name: player.name?.trim() || "",
+                  gender: player.gender?.trim() || "N/A",
+                  team2025: player.team2025?.trim() || "New Player",
+                  lastyrpoints: player.lastyrpoints?.trim() || "N/A",
+                  age: player.age?.trim() || "N/A",
+                  membershipNo: player.membershipNo?.trim() || "N/A",
+                  auctionSet: player.auctionSet?.trim() || "",
+                  battingStyle: player.battingStyle?.trim() || "N/A",
+                  bowlingStyle: player.bowlingStyle?.trim() || "N/A",
+                  image: player.image?.trim() || "",
+                }))
+                .filter((player) => player.name),
+            );
+          },
+          error: reject,
+        });
+      }),
+    ])
+      .then(([playerGroups, masterPlayers]) => {
         setPlayers(playerGroups.flat());
+        setAllPlayers(masterPlayers);
         setLoading(false);
       })
       .catch(() => {
@@ -250,7 +281,11 @@ export default function App() {
   }
 
   if (route === "/retained") {
-    return <RetainedView players={players} onBack={() => navigateTo("/")} />;
+    return <RetainedView players={allPlayers} onBack={() => navigateTo("/")} />;
+  }
+
+  if (route === "/summary-2025") {
+    return <Summary2025View onBack={() => navigateTo("/")} />;
   }
 
   if (selectedAuctionSet) {
@@ -275,6 +310,7 @@ export default function App() {
         auctionSets={auctionSetButtons}
         onChooseGroups={() => navigateTo("/slots")}
         onShowRetained={() => navigateTo("/retained")}
+        onShowSummary2025={() => navigateTo("/summary-2025")}
         canStartAuction={!loading && !error}
       />
 

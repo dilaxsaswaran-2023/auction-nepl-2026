@@ -28,7 +28,7 @@ const retainedTeams = [
     players: [
       { displayName: "S Thanushan", membershipNo: "AM-28432", matchName: "S.Thanusan" },
       { displayName: "Balakumar", membershipNo: "AM-29300", matchName: "M.Balakumar" },
-      { displayName: "A Kirushigan", membershipNo: "_", matchName: "" },
+      { displayName: "A Kirushigan", membershipNo: "_", matchName: "A.Kirushikan" },
     ],
   },
   {

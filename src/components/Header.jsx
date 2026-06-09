@@ -6,6 +6,7 @@ export default function Header({
   auctionSets,
   onChooseGroups,
   onShowRetained,
+  onShowSummary2025,
   canStartAuction,
 }) {
   return (
@@ -22,6 +23,7 @@ export default function Header({
           <a href="#players">Players</a>
           <button type="button" onClick={onChooseGroups}>Groups</button>
           <button type="button" onClick={onShowRetained}>Retained</button>
+          <button type="button" onClick={onShowSummary2025}>2025 Summary</button>
         </div>
       </nav>
 
@@ -43,6 +45,9 @@ export default function Header({
               </button>
               <button type="button" className="choose-groups-button" onClick={onShowRetained}>
                 Retained Players
+              </button>
+              <button type="button" className="choose-groups-button" onClick={onShowSummary2025}>
+                2025 Auction Summary
               </button>
             </div>
 
