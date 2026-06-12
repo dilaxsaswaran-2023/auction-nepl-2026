@@ -5,6 +5,7 @@ import Filters from "./components/Filters.jsx";
 import PlayerCard from "./components/PlayerCard.jsx";
 import AuctionView from "./components/AuctionView.jsx";
 import SlotsView from "./components/SlotsView.jsx";
+import CategoryOrderView from "./components/CategoryOrderView.jsx";
 import RetainedView from "./components/RetainedView.jsx";
 import Summary2025View from "./components/Summary2025View.jsx";
 
@@ -277,7 +278,22 @@ export default function App() {
   };
 
   if (route === "/slots") {
-    return <SlotsView onBack={() => navigateTo("/")} />;
+    return (
+      <SlotsView
+        onBack={() => navigateTo("/")}
+        onChooseCategoryOrder={() => navigateTo("/category-order")}
+      />
+    );
+  }
+
+  if (route === "/category-order") {
+    return (
+      <CategoryOrderView
+        categories={auctionSets.filter((set) => !set.hidden)}
+        onBack={() => navigateTo("/slots")}
+        onBackToPlayers={() => navigateTo("/")}
+      />
+    );
   }
 
   if (route === "/retained") {
@@ -309,6 +325,7 @@ export default function App() {
         onStartAuction={startAuction}
         auctionSets={auctionSetButtons}
         onChooseGroups={() => navigateTo("/slots")}
+        onShowAuctionOrder={() => navigateTo("/category-order")}
         onShowRetained={() => navigateTo("/retained")}
         onShowSummary2025={() => navigateTo("/summary-2025")}
         canStartAuction={!loading && !error}

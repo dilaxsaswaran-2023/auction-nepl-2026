@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const teams = [
   "Jaffna Jaguars",
@@ -18,20 +18,43 @@ function shuffle(values) {
     .map(({ value }) => value);
 }
 
-export default function SlotsView({ onBack }) {
+export default function SlotsView({ onBack, onChooseCategoryOrder }) {
   const emptySlots = useMemo(() => slotNames.map((slot) => ({ slot, team: "" })), []);
   const [assignments, setAssignments] = useState(emptySlots);
+  const [previewAssignments, setPreviewAssignments] = useState(emptySlots);
   const [isAssigning, setIsAssigning] = useState(false);
   const [hasAssigned, setHasAssigned] = useState(false);
+  const visibleAssignments = isAssigning ? previewAssignments : assignments;
+  const assignedCount = assignments.filter((assignment) => assignment.team).length;
+  const availableCount = assignments.length - assignedCount;
+
+  useEffect(() => {
+    if (!isAssigning) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      const shuffledTeams = shuffle(teams);
+      setPreviewAssignments(
+        slotNames.map((slot, index) => ({ slot, team: shuffledTeams[index] })),
+      );
+    }, 95);
+
+    return () => window.clearInterval(intervalId);
+  }, [isAssigning]);
 
   const assignTeams = () => {
     if (isAssigning || hasAssigned) return;
 
     setIsAssigning(true);
+    setPreviewAssignments(emptySlots);
 
     window.setTimeout(() => {
       const shuffledTeams = shuffle(teams);
-      setAssignments(slotNames.map((slot, index) => ({ slot, team: shuffledTeams[index] })));
+      const nextAssignments = slotNames.map((slot, index) => ({
+        slot,
+        team: shuffledTeams[index],
+      }));
+      setAssignments(nextAssignments);
+      setPreviewAssignments(nextAssignments);
       setIsAssigning(false);
       setHasAssigned(true);
     }, 1200);
@@ -42,12 +65,37 @@ export default function SlotsView({ onBack }) {
       <header className="slots-topbar">
         <div>
           <span>NEPL Season 2026</span>
-          <h1>Choose Groups</h1>
+          <h1>Team Slot Assignment</h1>
+          <p>Manage and assign teams to auction slots easily.</p>
         </div>
-        <button type="button" className="slots-back-button" onClick={onBack}>
-          Back to Players
-        </button>
+        <div className="slot-actions">
+          <button
+            type="button"
+            className="secondary-slot-button"
+            onClick={onChooseCategoryOrder}
+          >
+            Auction Order
+          </button>
+          <button type="button" className="slots-back-button" onClick={onBack}>
+            Home
+          </button>
+        </div>
       </header>
+
+      <section className="slot-summary-grid" aria-label="Slot assignment summary">
+        <article>
+          <span>Total Teams</span>
+          <strong>{teams.length}</strong>
+        </article>
+        <article>
+          <span>Assigned Slots</span>
+          <strong>{assignedCount}</strong>
+        </article>
+        <article>
+          <span>Available Slots</span>
+          <strong>{availableCount}</strong>
+        </article>
+      </section>
 
       <section className="slots-layout">
         <div className="available-teams">
@@ -64,26 +112,33 @@ export default function SlotsView({ onBack }) {
 
         <div className="slot-board">
           <header>
-            <h2>Slots</h2>
-            <button
-              type="button"
-              className="assign-button"
-              onClick={assignTeams}
-              disabled={isAssigning || hasAssigned}
-            >
-              {hasAssigned ? "Assigned" : isAssigning ? "Assigning..." : "Randomly Assign"}
-            </button>
+            <div>
+              <h2>Auction Slots</h2>
+              <p>{hasAssigned ? "Final team allocation is ready." : "Run a fair random assignment."}</p>
+            </div>
+            <div className="slot-actions">
+              <button
+                type="button"
+                className="assign-button"
+                onClick={assignTeams}
+                disabled={isAssigning || hasAssigned}
+              >
+                {hasAssigned ? "Assigned" : isAssigning ? "Shuffling..." : "Randomly Assign"}
+              </button>
+            </div>
           </header>
 
           <div className={`slot-grid${isAssigning ? " assigning" : ""}`}>
-            {assignments.map((assignment) => (
+            {visibleAssignments.map((assignment, index) => (
               <article className="slot-card" key={assignment.slot}>
-                <span>{assignment.slot}</span>
-                <strong>
-                  {isAssigning
-                    ? teams[Math.floor(Math.random() * teams.length)]
-                    : assignment.team || "Waiting"}
-                </strong>
+                <div className="slot-card-topline">
+                  <span>Slot {index + 1}</span>
+                  <small className={assignment.team ? "status-badge assigned" : "status-badge"}>
+                    {assignment.team ? "Assigned" : "Available"}
+                  </small>
+                </div>
+                <strong>{assignment.team || "Waiting for assignment"}</strong>
+                <small>{assignment.slot}</small>
               </article>
             ))}
           </div>
