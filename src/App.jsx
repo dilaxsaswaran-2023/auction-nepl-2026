@@ -8,6 +8,7 @@ import SlotsView from "./components/SlotsView.jsx";
 import CategoryOrderView from "./components/CategoryOrderView.jsx";
 import RetainedView from "./components/RetainedView.jsx";
 import Summary2025View from "./components/Summary2025View.jsx";
+import ResultsView from "./components/ResultsView.jsx";
 
 const initialFilters = {
   search: "",
@@ -42,10 +43,10 @@ const auctionSets = [
   },
   {
     id: "below-40-charted-men",
-    label: "40 and Below Charted Men",
+    label: "Below 40 Charted Men",
     file: "/data/below-40-charted-men.csv",
-    dataLabel: "40 and Below Charted Men",
-    matches: (player) => player.auctionSet === "40 and Below Charted Men",
+    dataLabel: "Below 40 Charted Men",
+    matches: (player) => player.auctionSet === "Below 40 Charted Men",
   },
   {
     id: "below-100-male",
@@ -70,6 +71,14 @@ const auctionSets = [
     hidden: true,
   },
 ];
+
+const categoryOrderExcludedSetIds = new Set([
+  "over-40-charted-men",
+  "over-40-non-charted-men",
+  "below-40-charted-men",
+]);
+
+const auctionStatusStorageKey = "nepl-2026-auction-statuses";
 
 function uniqueValues(players, key) {
   return [...new Set(players.map((player) => player[key]).filter(Boolean))].sort(
@@ -106,6 +115,14 @@ function parsePlayerCsv(set) {
   });
 }
 
+function readAuctionStatuses() {
+  try {
+    return JSON.parse(window.localStorage.getItem(auctionStatusStorageKey) || "{}");
+  } catch {
+    return {};
+  }
+}
+
 function shufflePlayers(players) {
   return [...players]
     .map((player) => ({ player, sortKey: Math.random() }))
@@ -126,6 +143,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [auctionIndex, setAuctionIndex] = useState(0);
   const [auctionPlayers, setAuctionPlayers] = useState([]);
+  const [auctionStatuses, setAuctionStatuses] = useState(() => readAuctionStatuses());
   const [route, setRoute] = useState(window.location.pathname);
 
   useEffect(() => {
@@ -176,14 +194,30 @@ export default function App() {
   }, []);
 
   const auctionType = route.match(/^\/auction\/([^/]+)$/)?.[1] || "";
+  const unsoldAuctionType = route.match(/^\/auction\/([^/]+)\/unsold$/)?.[1] || "";
+  const selectedUnsoldAuctionSet = auctionSets.find(
+    (set) => set.id === unsoldAuctionType && !set.hidden,
+  );
   const selectedAuctionSet = auctionSets.find((set) => set.id === auctionType && !set.hidden);
 
   useEffect(() => {
-    if (!selectedAuctionSet || players.length === 0) return;
+    if ((!selectedAuctionSet && !selectedUnsoldAuctionSet) || players.length === 0) return;
 
-    setAuctionPlayers(shufflePlayers(players.filter(selectedAuctionSet.matches)));
+    const nextPlayers = selectedUnsoldAuctionSet
+      ? players.filter(
+          (player) =>
+            selectedUnsoldAuctionSet.matches(player) &&
+            auctionStatuses[player.name]?.status === "unsold",
+        )
+      : players.filter(
+          (player) =>
+            selectedAuctionSet.matches(player) &&
+            !auctionStatuses[player.name]?.status,
+        );
+
+    setAuctionPlayers(shufflePlayers(nextPlayers));
     setAuctionIndex(0);
-  }, [players, selectedAuctionSet]);
+  }, [auctionStatuses, players, selectedAuctionSet, selectedUnsoldAuctionSet]);
 
   const options = useMemo(
     () => ({
@@ -268,13 +302,49 @@ export default function App() {
         .map((set) => ({
           id: set.id,
           label: set.label,
-          count: players.filter(set.matches).length,
+          count: players.filter(
+            (player) => set.matches(player) && !auctionStatuses[player.name]?.status,
+          ).length,
+          unsoldCount: players.filter(
+            (player) => set.matches(player) && auctionStatuses[player.name]?.status === "unsold",
+          ).length,
         })),
-    [players],
+    [auctionStatuses, players],
   );
 
   const startAuction = (setId) => {
     navigateTo(`/auction/${setId}`);
+  };
+
+  const startUnsoldAuction = (setId) => {
+    navigateTo(`/auction/${setId}/unsold`);
+  };
+
+  const updatePlayerStatus = (player, status) => {
+    setAuctionStatuses((current) => {
+      const next = {
+        ...current,
+        [player.name]: {
+          status,
+          category: player.auctionSet,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+      window.localStorage.setItem(auctionStatusStorageKey, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const resetAuctionStatuses = () => {
+    const password = window.prompt("Enter password to reset all sold/unsold data");
+    if (password !== "nepl26") {
+      if (password !== null) window.alert("Incorrect password.");
+      return;
+    }
+
+    window.localStorage.removeItem(auctionStatusStorageKey);
+    setAuctionStatuses({});
+    window.alert("All sold/unsold data has been reset.");
   };
 
   if (route === "/slots") {
@@ -289,7 +359,9 @@ export default function App() {
   if (route === "/category-order") {
     return (
       <CategoryOrderView
-        categories={auctionSets.filter((set) => !set.hidden)}
+        categories={auctionSets.filter(
+          (set) => !set.hidden && !categoryOrderExcludedSetIds.has(set.id),
+        )}
         onBack={() => navigateTo("/slots")}
         onBackToPlayers={() => navigateTo("/")}
       />
@@ -304,13 +376,30 @@ export default function App() {
     return <Summary2025View onBack={() => navigateTo("/")} />;
   }
 
-  if (selectedAuctionSet) {
+  if (route === "/results") {
+    return (
+      <ResultsView
+        players={players}
+        auctionSets={auctionSets.filter((set) => !set.hidden)}
+        auctionStatuses={auctionStatuses}
+        onBack={() => navigateTo("/")}
+      />
+    );
+  }
+
+  if (selectedAuctionSet || selectedUnsoldAuctionSet) {
     return (
       <AuctionView
         players={auctionPlayers}
         currentIndex={auctionIndex}
         onChangeIndex={setAuctionIndex}
-        title={selectedAuctionSet.label}
+        title={
+          selectedUnsoldAuctionSet
+            ? `${selectedUnsoldAuctionSet.label} - Unsold Round`
+            : selectedAuctionSet.label
+        }
+        playerStatus={auctionPlayers[auctionIndex] ? auctionStatuses[auctionPlayers[auctionIndex].name] : null}
+        onMarkStatus={updatePlayerStatus}
         onExit={() => navigateTo("/")}
       />
     );
@@ -324,10 +413,13 @@ export default function App() {
         dashboardStats={dashboardStats}
         onStartAuction={startAuction}
         auctionSets={auctionSetButtons}
+        onStartUnsoldAuction={startUnsoldAuction}
+        onResetAuctionStatuses={resetAuctionStatuses}
         onChooseGroups={() => navigateTo("/slots")}
         onShowAuctionOrder={() => navigateTo("/category-order")}
         onShowRetained={() => navigateTo("/retained")}
         onShowSummary2025={() => navigateTo("/summary-2025")}
+        onShowResults={() => navigateTo("/results")}
         canStartAuction={!loading && !error}
       />
 

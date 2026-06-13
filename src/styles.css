@@ -170,6 +170,11 @@ a { color: inherit; text-decoration: none; }
   gap: 9px;
   margin-top: 18px;
 }
+.auction-set-button-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
 .start-auction-button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -187,9 +192,27 @@ a { color: inherit; text-decoration: none; }
 }
 .start-auction-button:hover:not(:disabled) { transform: translateY(-2px); border-color: rgba(243,214,119,.7); background: rgba(255,255,255,.13); }
 .start-auction-button:disabled, .secondary-cta:disabled, .assign-button:disabled { cursor: not-allowed; opacity: .52; }
+.unsold-round-button { border-color: rgba(216,59,59,.34); background: rgba(216,59,59,.16); }
+.auction-set-button-group .unsold-round-button {
+  min-height: 38px;
+  padding: 6px 10px;
+}
+.auction-set-button-group .unsold-round-button span {
+  font-size: .76rem;
+}
 .start-auction-button span { overflow-wrap: anywhere; font-size: .84rem; line-height: 1.12; }
 .start-auction-button strong { display: grid; place-items: center; min-width: 30px; min-height: 30px; color: var(--navy-950); border-radius: 999px; background: var(--gold-300); }
 .hero-caption { margin-top: 14px; color: rgba(255,255,255,.62); font-size: .9rem; font-weight: 750; }
+.result-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.choose-groups-button.danger {
+  border-color: rgba(216,59,59,.34);
+  background: rgba(216,59,59,.18);
+}
 .control-center {
   width: min(860px, 100%);
   margin-top: 26px;
@@ -384,6 +407,25 @@ a { color: inherit; text-decoration: none; }
 .auction-live-tag, .auction-lot { justify-self: start; padding: 7px 10px; color: var(--navy-950); font-size: .84rem; font-weight: 950; border-radius: 999px; background: var(--gold-300); }
 .auction-live-tag { position: absolute; left: 14px; top: 14px; }
 .auction-details { display: grid; gap: 16px; min-width: 0; }
+.auction-status-panel {
+  display: grid;
+  gap: 6px;
+  justify-self: start;
+  min-width: 180px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.1);
+}
+.auction-status-panel span {
+  color: rgba(255,255,255,.68);
+  font-size: .7rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+.auction-status-panel strong { color: #fff; }
+.auction-status-panel.sold { border-color: rgba(24,179,107,.5); background: rgba(24,179,107,.18); }
+.auction-status-panel.unsold { border-color: rgba(216,59,59,.52); background: rgba(216,59,59,.18); }
 .auction-meta, .auction-skills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
 .auction-meta div, .auction-skill { display: grid; gap: 6px; min-height: 82px; padding: 14px; border: 1px solid rgba(255,255,255,.14); border-radius: var(--radius); background: rgba(255,255,255,.1); backdrop-filter: blur(16px); }
 .auction-meta span, .auction-skill span { color: rgba(255,255,255,.7); font-size: .7rem; font-weight: 950; }
@@ -395,8 +437,26 @@ a { color: inherit; text-decoration: none; }
 .auction-controls button:hover:not(:disabled) { transform: translateY(-2px); }
 .auction-controls button.primary { color: var(--navy-950); background: linear-gradient(135deg, var(--gold-300), var(--green-500)); }
 .auction-controls button:disabled { cursor: not-allowed; opacity: .48; }
+.auction-result-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.auction-result-controls button {
+  min-height: 48px;
+  color: #fff;
+  font-weight: 950;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: var(--radius);
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+.auction-result-controls button:hover:not(:disabled) { transform: translateY(-2px); }
+.auction-result-controls .sold { background: linear-gradient(135deg, var(--green-600), var(--green-500)); }
+.auction-result-controls .unsold { background: linear-gradient(135deg, #991b1b, var(--red-500)); }
+.auction-result-controls .clear { background: rgba(255,255,255,.1); }
+.auction-result-controls button:disabled { cursor: not-allowed; opacity: .48; }
 
-.slots-page, .retained-page, .summary-page { min-height: 100vh; padding: 26px clamp(14px, 4vw, 58px) 48px; background: #eef3f7; }
+.slots-page, .retained-page, .summary-page, .results-page { min-height: 100vh; padding: 26px clamp(14px, 4vw, 58px) 48px; background: #eef3f7; }
 .slots-page {
   color: #fff;
   background:
@@ -404,10 +464,11 @@ a { color: inherit; text-decoration: none; }
     radial-gradient(circle at 88% 16%, rgba(36,96,167,.28), transparent 26rem),
     linear-gradient(135deg, #07111f 0%, #132c5a 52%, #351f70 100%);
 }
-.slots-topbar, .retained-topbar, .summary-topbar { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; width: min(1080px, 100%); margin: 0 auto 22px; }
-.slots-topbar span, .retained-topbar span, .summary-topbar span { color: var(--green-600); font-size: .78rem; font-weight: 950; }
+.slots-topbar, .retained-topbar, .summary-topbar, .results-topbar { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; width: min(1080px, 100%); margin: 0 auto 22px; }
+.slots-topbar span, .retained-topbar span, .summary-topbar span, .results-topbar span { color: var(--green-600); font-size: .78rem; font-weight: 950; }
 .slots-topbar span { color: var(--gold-300); }
-.slots-topbar h1, .retained-topbar h1, .summary-topbar h1 { margin: 5px 0 0; color: var(--navy-900); font-size: clamp(2rem, 5.8vw, 4rem); line-height: .98; }
+.slots-topbar h1, .retained-topbar h1, .summary-topbar h1, .results-topbar h1 { margin: 5px 0 0; color: var(--navy-900); font-size: clamp(2rem, 5.8vw, 4rem); line-height: .98; }
+.results-topbar p { margin: 10px 0 0; color: var(--muted); font-weight: 700; }
 .slots-topbar h1 { color: #fff; }
 .slots-topbar p {
   max-width: 620px;
@@ -512,7 +573,7 @@ a { color: inherit; text-decoration: none; }
 .status-badge.assigned { color: #065f46; background: rgba(24,179,107,.16); }
 .slot-grid.assigning .slot-card strong { color: var(--navy-900); animation: textShuffle 180ms steps(2, end) infinite; }
 .category-order-layout { grid-template-columns: minmax(280px, .46fr) minmax(360px, 1fr); }
-.category-order-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.category-order-grid { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
 .category-order-card { min-height: 142px; }
 .category-order-card strong { font-size: clamp(1.08rem, 2.4vw, 1.55rem); line-height: 1.12; }
 .category-order-card.revealed {
@@ -556,6 +617,68 @@ a { color: inherit; text-decoration: none; }
 .summary-table tr.points-high td { background: rgba(24,179,107,.12); }
 .summary-table tr.points-zero td { color: var(--muted); background: rgba(16,36,61,.04); }
 .summary-table tr:hover td { background: color-mix(in srgb, var(--team-color), #fff 86%); }
+.results-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: min(1080px, 100%);
+  margin: 0 auto 20px;
+}
+.results-summary article {
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid rgba(16,36,61,.08);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.results-summary span {
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+.results-summary strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--navy-900);
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.results-groups {
+  display: grid;
+  gap: 22px;
+  width: min(1080px, 100%);
+  margin: 0 auto;
+}
+.results-group {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(16,36,61,.08);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.94);
+  box-shadow: var(--shadow-sm);
+}
+.results-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.results-group-header h2 { margin: 0; color: var(--navy-900); }
+.results-group-header span {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 36px;
+  color: var(--navy-950);
+  font-weight: 950;
+  border-radius: 999px;
+  background: var(--gold-300);
+}
+.results-table-wrap { overflow-x: auto; }
+.results-table { min-width: 720px; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
@@ -582,14 +705,14 @@ a { color: inherit; text-decoration: none; }
   .nav-links { width: 100%; overflow-x: auto; padding-bottom: 2px; }
   .hero { min-height: 720px; padding: 34px 18px 82px; }
   .hero h1 { font-size: clamp(2.8rem, 15vw, 4.6rem); }
-  .hero-stats, .auction-dashboard, .auction-insights, .board-metrics, .players-grid, .filter-controls, .profile-row, .skill-row, .auction-spotlight, .auction-meta, .auction-skills, .slots-layout, .slot-grid, .retained-grid, .summary-teams, .summary-highlights, .control-card-grid, .slot-summary-grid { grid-template-columns: 1fr; }
+  .hero-stats, .auction-dashboard, .auction-insights, .board-metrics, .players-grid, .filter-controls, .profile-row, .skill-row, .auction-spotlight, .auction-meta, .auction-skills, .slots-layout, .slot-grid, .retained-grid, .summary-teams, .summary-highlights, .control-card-grid, .slot-summary-grid, .results-summary { grid-template-columns: 1fr; }
   .hero-visual-bat { right: 38px; top: 344px; width: 32px; height: 198px; opacity: .42; }
   .hero-visual-ball { right: 30px; bottom: 86px; width: 80px; }
   .hero-visual-stumps { display: none; }
   .content-wrap { width: min(100% - 24px, 1240px); margin-top: -48px; }
   .player-heading { display: grid; }
   .auction-stage { min-height: 100svh; padding: 12px 12px 20px; }
-  .auction-topbar, .slots-topbar, .retained-topbar, .summary-topbar, .retained-team-header, .summary-team-header, .retained-card { display: grid; grid-template-columns: 1fr; }
+  .auction-topbar, .slots-topbar, .retained-topbar, .summary-topbar, .results-topbar, .retained-team-header, .summary-team-header, .retained-card { display: grid; grid-template-columns: 1fr; }
   .slot-actions { justify-content: stretch; }
   .slot-actions button { width: 100%; }
   .control-center { padding: 12px; }
@@ -602,6 +725,7 @@ a { color: inherit; text-decoration: none; }
   .auction-photo { min-height: 0; max-height: 34vh; aspect-ratio: 16 / 10; }
   .auction-meta div, .auction-skill { min-height: 68px; padding: 12px; }
   .auction-controls { display: grid; grid-template-columns: 1fr 1fr; }
+  .auction-result-controls { grid-template-columns: 1fr; }
   .auction-controls button { min-height: 42px; padding: 0 10px; }
 }
 

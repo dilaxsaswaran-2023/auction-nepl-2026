@@ -4,10 +4,13 @@ export default function Header({
   dashboardStats,
   onStartAuction,
   auctionSets,
+  onStartUnsoldAuction,
+  onResetAuctionStatuses,
   onChooseGroups,
   onShowAuctionOrder,
   onShowRetained,
   onShowSummary2025,
+  onShowResults,
   canStartAuction,
 }) {
   return (
@@ -73,21 +76,44 @@ export default function Header({
 
             <div className="auction-set-actions" aria-label="Start auction by player set">
               {auctionSets.map((set) => (
-                <button
-                  key={set.id}
-                  type="button"
-                  className="start-auction-button"
-                  onClick={() => onStartAuction(set.id)}
-                  disabled={!canStartAuction || set.count === 0}
-                >
-                  <span>{set.label}</span>
-                  <strong>{set.count}</strong>
-                </button>
+                <div className="auction-set-button-group" key={set.id}>
+                  <button
+                    type="button"
+                    className="start-auction-button"
+                    onClick={() => onStartAuction(set.id)}
+                    disabled={!canStartAuction || set.count === 0}
+                  >
+                    <span>{set.label}</span>
+                    <strong>{set.count}</strong>
+                  </button>
+                  <button
+                    type="button"
+                    className="start-auction-button unsold-round-button"
+                    onClick={() => onStartUnsoldAuction(set.id)}
+                    disabled={!canStartAuction || set.unsoldCount === 0}
+                  >
+                    <span>Unsold</span>
+                    <strong>{set.unsoldCount}</strong>
+                  </button>
+                </div>
               ))}
             </div>
 
             <div className="hero-caption">
               <span>{visiblePlayers} players currently match the active directory view.</span>
+            </div>
+
+            <div className="result-action-row" aria-label="Auction result actions">
+              <button type="button" className="choose-groups-button" onClick={onShowResults}>
+                Auction Results
+              </button>
+              <button
+                type="button"
+                className="choose-groups-button danger"
+                onClick={onResetAuctionStatuses}
+              >
+                Reset Results
+              </button>
             </div>
 
             <section className="control-center" aria-label="Auction Control Center">

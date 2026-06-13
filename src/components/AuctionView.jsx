@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { getPlayerImageCandidates, placeholderImage } from "../utils/imageHelper.js";
 
-export default function AuctionView({ players, currentIndex, onChangeIndex, title, onExit }) {
+export default function AuctionView({
+  players,
+  currentIndex,
+  onChangeIndex,
+  title,
+  playerStatus,
+  onMarkStatus,
+  onExit,
+}) {
   const player = players[currentIndex];
   const imageCandidates = useMemo(
     () => (player ? getPlayerImageCandidates(player) : [placeholderImage]),
@@ -16,11 +24,11 @@ export default function AuctionView({ players, currentIndex, onChangeIndex, titl
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "ArrowRight") {
-        onChangeIndex((currentIndex + 1) % players.length);
+        onChangeIndex(players.length ? (currentIndex + 1) % players.length : 0);
       }
 
       if (event.key === "ArrowLeft") {
-        onChangeIndex((currentIndex - 1 + players.length) % players.length);
+        onChangeIndex(players.length ? (currentIndex - 1 + players.length) % players.length : 0);
       }
 
       if (event.key === "Escape") {
@@ -46,11 +54,21 @@ export default function AuctionView({ players, currentIndex, onChangeIndex, titl
   const currentImage = imageCandidates[imageIndex] || placeholderImage;
   const isFirstPlayer = currentIndex === 0;
   const isLastPlayer = currentIndex === players.length - 1;
+  const statusLabel = playerStatus?.status
+    ? playerStatus.status.charAt(0).toUpperCase() + playerStatus.status.slice(1)
+    : "Not marked";
 
   const handleImageError = () => {
     setImageIndex((current) =>
       current < imageCandidates.length - 1 ? current + 1 : current,
     );
+  };
+
+  const markAndMoveNext = (status) => {
+    onMarkStatus(player, status);
+    if (!isLastPlayer) {
+      onChangeIndex(currentIndex + 1);
+    }
   };
 
   return (
@@ -80,6 +98,10 @@ export default function AuctionView({ players, currentIndex, onChangeIndex, titl
 
         <div className="auction-details">
           <span className="auction-lot">Lot #{String(currentIndex + 1).padStart(2, "0")}</span>
+          <div className={`auction-status-panel ${playerStatus?.status || ""}`}>
+            <span>Auction Status</span>
+            <strong>{statusLabel}</strong>
+          </div>
 
           <div className="auction-meta">
             <div>
@@ -118,6 +140,15 @@ export default function AuctionView({ players, currentIndex, onChangeIndex, titl
               disabled={isLastPlayer}
             >
               Next Player
+            </button>
+          </div>
+
+          <div className="auction-result-controls" aria-label="Mark auction result">
+            <button type="button" className="sold" onClick={() => markAndMoveNext("sold")}>
+              Sold
+            </button>
+            <button type="button" className="unsold" onClick={() => markAndMoveNext("unsold")}>
+              Unsold
             </button>
           </div>
         </div>

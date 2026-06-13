@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const positions = ["01", "02", "03", "04", "05", "06"];
+const positions = ["01", "02", "03"];
 
 function shuffle(values) {
   return [...values]
