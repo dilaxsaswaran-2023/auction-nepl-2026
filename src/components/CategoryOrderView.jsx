@@ -17,6 +17,8 @@ export default function CategoryOrderView({ categories, onBack, onBackToPlayers 
   const [order, setOrder] = useState(emptyOrder);
   const [previewOrder, setPreviewOrder] = useState(emptyOrder);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [revealedPositions, setRevealedPositions] = useState([]);
   const [hasSelected, setHasSelected] = useState(false);
 
   useEffect(() => {
@@ -36,9 +38,12 @@ export default function CategoryOrderView({ categories, onBack, onBackToPlayers 
   }, [categories, isShuffling]);
 
   const selectOrder = () => {
-    if (isShuffling || hasSelected) return;
+    if (isShuffling || isRevealing || hasSelected) return;
 
     setIsShuffling(true);
+    setIsRevealing(false);
+    setRevealedPositions([]);
+    setOrder(emptyOrder);
     setPreviewOrder(emptyOrder);
 
     window.setTimeout(() => {
@@ -48,19 +53,37 @@ export default function CategoryOrderView({ categories, onBack, onBackToPlayers 
         category: shuffledCategories[index]?.label || "",
       }));
 
-      setOrder(nextOrder);
       setPreviewOrder(nextOrder);
       setIsShuffling(false);
-      setHasSelected(true);
-    }, 1400);
+      setIsRevealing(true);
+
+      nextOrder.forEach((item, index) => {
+        window.setTimeout(() => {
+          setOrder((current) =>
+            current.map((currentItem) =>
+              currentItem.position === item.position ? item : currentItem,
+            ),
+          );
+          setRevealedPositions((current) => [...current, item.position]);
+
+          if (index === nextOrder.length - 1) {
+            setIsRevealing(false);
+            setHasSelected(true);
+          }
+        }, index * 360);
+      });
+    }, 900);
   };
+
+  const visibleOrder = isShuffling ? previewOrder : order;
+  const isAnimating = isShuffling || isRevealing;
 
   return (
     <main className="slots-page category-order-page">
       <header className="slots-topbar">
         <div>
           <span>NEPL Season 2026</span>
-          <h1>Category Order</h1>
+          <h1>Auction Order</h1>
         </div>
         <div className="slot-actions">
           <button type="button" className="secondary-slot-button" onClick={onBack}>
@@ -92,15 +115,26 @@ export default function CategoryOrderView({ categories, onBack, onBackToPlayers 
               type="button"
               className="assign-button"
               onClick={selectOrder}
-              disabled={isShuffling || hasSelected}
+              disabled={isAnimating || hasSelected}
             >
-              {hasSelected ? "Selected" : isShuffling ? "Shuffling..." : "Select Order"}
+              {hasSelected
+                ? "Selected"
+                : isRevealing
+                  ? "Assigning..."
+                  : isShuffling
+                    ? "Shuffling..."
+                    : "Select Order"}
             </button>
           </header>
 
-          <div className={`slot-grid category-order-grid${isShuffling ? " assigning" : ""}`}>
-            {(isShuffling ? previewOrder : order).map((item) => (
-              <article className="slot-card category-order-card" key={item.position}>
+          <div className={`slot-grid category-order-grid${isAnimating ? " assigning" : ""}`}>
+            {visibleOrder.map((item) => (
+              <article
+                className={`slot-card category-order-card${
+                  revealedPositions.includes(item.position) ? " revealed" : ""
+                }`}
+                key={item.position}
+              >
                 <span>Order {item.position}</span>
                 <strong>{item.category || "Waiting"}</strong>
               </article>

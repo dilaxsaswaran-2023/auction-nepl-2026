@@ -82,21 +82,6 @@ export default function SlotsView({ onBack, onChooseCategoryOrder }) {
         </div>
       </header>
 
-      <section className="slot-summary-grid" aria-label="Slot assignment summary">
-        <article>
-          <span>Total Teams</span>
-          <strong>{teams.length}</strong>
-        </article>
-        <article>
-          <span>Assigned Slots</span>
-          <strong>{assignedCount}</strong>
-        </article>
-        <article>
-          <span>Available Slots</span>
-          <strong>{availableCount}</strong>
-        </article>
-      </section>
-
       <section className="slots-layout">
         <div className="available-teams">
           <header>

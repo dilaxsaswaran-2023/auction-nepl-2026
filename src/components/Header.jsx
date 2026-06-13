@@ -93,23 +93,20 @@ export default function Header({
             <section className="control-center" aria-label="Auction Control Center">
               <div className="control-center-heading">
                 <span>Auction Control Center</span>
-                <h2>Auction Control Center</h2>
               </div>
 
               <div className="control-card-grid">
-                <button type="button" className="control-card" onClick={onChooseGroups}>
-                  <span className="control-icon" aria-hidden="true">▦</span>
-                  <span>
-                    <strong>Team Slot Assign</strong>
-                    <small>Assign teams to auction slots in a clean and organized way.</small>
-                  </span>
-                </button>
-
                 <button type="button" className="control-card accent" onClick={onShowAuctionOrder}>
                   <span className="control-icon" aria-hidden="true">⟳</span>
                   <span>
                     <strong>Auction Order Spinning</strong>
-                    <small>Spin and generate the auction order fairly.</small>
+                  </span>
+                </button>
+
+                <button type="button" className="control-card" onClick={onChooseGroups}>
+                  <span className="control-icon" aria-hidden="true">▦</span>
+                  <span>
+                    <strong>Team Slot Assign</strong>
                   </span>
                 </button>
               </div>
